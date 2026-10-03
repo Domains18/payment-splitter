@@ -3,7 +3,7 @@ import sqlite3
 
 
 class DatabaseManager:
-    def __init__(self, db_name="payment_splitter"):
+    def __init__(self, db_name="trc20_splitter.db"):
         self.db_name = db_name
         self.init_db()
 
@@ -20,6 +20,20 @@ class DatabaseManager:
         with self.get_connections() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-            CREATE TABLE IF NOT EXISTS members(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE NOT NULL)""")
+            CREATE TABLE IF NOT EXISTS members(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            tron_address TEXT UNIQUE NOT NULL
+            )""")
 
-            cursor.execute("""CREATE TABLE IF NOT EXISTS expenses(id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT NOT NULL, amount REAL NOT NULL, payer_id INTEGER NOT NULL, FOREIGN KEY (payer_id) REFERENCES members(id) ON DELETE CASCADE)""")
+            """store executed batchj distribution payouts for audit"""
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS payouts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tx_hash TEXT UNIQUE NOT NULL,
+                    amount_usdt REAL NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            conn.commit()
